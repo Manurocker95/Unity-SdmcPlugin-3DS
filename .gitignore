@@ -104,3 +104,7 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+/Assets/SdmcExample/Source/**/*.meta
+/Assets/SdmcExample/Source/SdmcPlugin/Debug
+/Assets/SdmcExample/Source/SdmcPlugin/Develop
+/Assets/SdmcExample/Source/SdmcPlugin/Release
