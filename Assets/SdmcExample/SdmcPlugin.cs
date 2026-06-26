@@ -87,9 +87,6 @@ public class SdmcPlugin : MonoBehaviour {
     [DllImport("__Internal")]
     public static extern SdmcResult SdmcSeekReadStream(IntPtr stream, int offset, int origin);
 
-    [DllImport("__Internal")]
-    public static extern SdmcResult SdmcTellReadStream(IntPtr stream, out int position);
-
     public static string GetErrorString(SdmcResult result)
     {
         return Marshal.PtrToStringAnsi(SdmcGetErrorString((int)result));

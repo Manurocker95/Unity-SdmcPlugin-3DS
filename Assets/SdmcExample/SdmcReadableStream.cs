@@ -20,32 +20,13 @@ public sealed class SdmcReadableStream : Stream
 
     public override long Position
     {
-        get
-        {
-            int position;
-            var result = SdmcPlugin.SdmcTellReadStream(handle, out position);
-
-            if (result != SdmcPlugin.SdmcResult.SDMC_SUCCESS)
-                throw new IOException(SdmcPlugin.GetErrorString(result));
-
-            return position;
-        }
-        set
-        {
-            Seek(value, SeekOrigin.Begin);
-        }
+        get { throw new NotSupportedException(); }
+        set { Seek(value, SeekOrigin.Begin); }
     }
 
     public override long Length
     {
-        get
-        {
-            long old = Position;
-            Seek(0, SeekOrigin.End);
-            long len = Position;
-            Seek(old, SeekOrigin.Begin);
-            return len;
-        }
+          get { throw new NotSupportedException(); }
     }
 
     public override long Seek(long offset, SeekOrigin origin)
