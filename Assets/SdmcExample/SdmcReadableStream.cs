@@ -15,15 +15,61 @@ public sealed class SdmcReadableStream : Stream
     }
 
     public override bool CanRead { get { return !disposed; } }
-    public override bool CanSeek { get { return false; } }
+    public override bool CanSeek { get { return !disposed; } }
     public override bool CanWrite { get { return false; } }
-    public override long Length { get { throw new NotSupportedException(); } }
+
     public override long Position
     {
-        get { throw new NotSupportedException(); }
-        set { throw new NotSupportedException(); }
+        get
+        {
+            int position;
+            var result = SdmcPlugin.SdmcTellReadStream(handle, out position);
+
+            if (result != SdmcPlugin.SdmcResult.SDMC_SUCCESS)
+                throw new IOException(SdmcPlugin.GetErrorString(result));
+
+            return position;
+        }
+        set
+        {
+            Seek(value, SeekOrigin.Begin);
+        }
     }
-    
+
+    public override long Length
+    {
+        get
+        {
+            long old = Position;
+            Seek(0, SeekOrigin.End);
+            long len = Position;
+            Seek(old, SeekOrigin.Begin);
+            return len;
+        }
+    }
+
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        if (disposed)
+            throw new ObjectDisposedException("SdmcReadableStream");
+
+        int originInt = 0;
+
+        if (origin == SeekOrigin.Begin)
+            originInt = 0;
+        else if (origin == SeekOrigin.Current)
+            originInt = 1;
+        else if (origin == SeekOrigin.End)
+            originInt = 2;
+
+        var result = SdmcPlugin.SdmcSeekReadStream(handle, (int)offset, originInt);
+
+        if (result != SdmcPlugin.SdmcResult.SDMC_SUCCESS)
+            throw new IOException(SdmcPlugin.GetErrorString(result));
+
+        return Position;
+    }
+
     public override void Flush()
     {
     }
@@ -40,7 +86,6 @@ public sealed class SdmcReadableStream : Stream
             throw new ArgumentOutOfRangeException();
 
         int bytesRead;
-
         var result = SdmcPlugin.SdmcReadStream(handle, buffer, count, out bytesRead);
 
         if (result != SdmcPlugin.SdmcResult.SDMC_SUCCESS)
@@ -59,10 +104,7 @@ public sealed class SdmcReadableStream : Stream
             {
                 int bytesRead = Read(buffer, 0, buffer.Length);
 
-                if (bytesRead < 0)
-                    throw new Exception("Read failed");
-
-                if (bytesRead == 0)
+                if (bytesRead <= 0)
                     break;
 
                 memory.Write(buffer, 0, bytesRead);
@@ -75,11 +117,6 @@ public sealed class SdmcReadableStream : Stream
     public string ReadAllText()
     {
         return System.Text.Encoding.UTF8.GetString(ReadAll());
-    }
-
-    public override long Seek(long offset, SeekOrigin origin)
-    {
-        throw new NotSupportedException();
     }
 
     public override void SetLength(long value)
@@ -99,10 +136,10 @@ public sealed class SdmcReadableStream : Stream
             if (handle != IntPtr.Zero)
             {
                 var result = SdmcPlugin.SdmcCloseReadStream(handle);
+
                 if (result != SdmcPlugin.SdmcResult.SDMC_SUCCESS)
-                {
                     throw new Exception(SdmcPlugin.GetErrorString(result));
-                }
+
                 handle = IntPtr.Zero;
             }
 

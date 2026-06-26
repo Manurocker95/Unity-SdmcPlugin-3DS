@@ -371,4 +371,39 @@ extern "C"
 			return "Unknown error";
 		}
 	}
+
+	SdmcResult SdmcSeekReadStream(SdmcReadableStream* stream, int offset, int origin)
+	{
+	    if (!stream || !stream->isOpen)
+	        return SDMC_INVALID_ARGUMENT;
+
+	    nn::fs::PositionBase base;
+
+	    switch (origin)
+	    {
+	        case 0: base = nn::fs::POSITION_BASE_BEGIN; break;
+	        case 1: base = nn::fs::POSITION_BASE_CURRENT; break;
+	        case 2: base = nn::fs::POSITION_BASE_END; break;
+	        default: return SDMC_INVALID_ARGUMENT;
+	    }
+
+	    nn::Result result = stream->file.TrySeek(offset, base);
+
+	    return result.IsSuccess() ? SDMC_SUCCESS : SDMC_READ_FAILED;
+	}
+
+	SdmcResult SdmcTellReadStream(SdmcReadableStream* stream, int* outPosition)
+	{
+	    if (!stream || !stream->isOpen || !outPosition)
+	        return SDMC_INVALID_ARGUMENT;
+
+	    s64 position = 0;
+	    nn::Result result = stream->file.TryTell(&position);
+
+	    if (result.IsFailure())
+	        return SDMC_READ_FAILED;
+
+	    *outPosition = (int)position;
+	    return SDMC_SUCCESS;
+	}
 }
