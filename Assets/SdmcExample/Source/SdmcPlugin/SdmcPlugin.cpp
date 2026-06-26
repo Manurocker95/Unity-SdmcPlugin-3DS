@@ -391,19 +391,4 @@ extern "C"
 
 	    return result.IsSuccess() ? SDMC_SUCCESS : SDMC_READ_FAILED;
 	}
-
-	SdmcResult SdmcTellReadStream(SdmcReadableStream* stream, int* outPosition)
-	{
-	    if (!stream || !stream->isOpen || !outPosition)
-	        return SDMC_INVALID_ARGUMENT;
-
-	    s64 position = 0;
-	    nn::Result result = stream->file.TryTell(&position);
-
-	    if (result.IsFailure())
-	        return SDMC_READ_FAILED;
-
-	    *outPosition = (int)position;
-	    return SDMC_SUCCESS;
-	}
 }
