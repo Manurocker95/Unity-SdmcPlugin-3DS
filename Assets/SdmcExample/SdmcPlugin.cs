@@ -87,6 +87,12 @@ public class SdmcPlugin : MonoBehaviour {
     [DllImport("__Internal")]
     public static extern SdmcResult SdmcSeekReadStream(IntPtr stream, int offset, int origin);
 
+    [DllImport("__Internal")]
+    public static extern SdmcResult SdmcTellReadStream(IntPtr stream, out int position);
+
+    [DllImport("__Internal")]
+    public static extern SdmcResult SdmcGetReadStreamLength(IntPtr stream, out int length);
+
     public static string GetErrorString(SdmcResult result)
     {
         return Marshal.PtrToStringAnsi(SdmcGetErrorString((int)result));
@@ -156,5 +162,15 @@ public class SdmcPlugin : MonoBehaviour {
     {
         path = Path.Combine(BasePath, path);
         return SdmcDirectoryDelete(path);
+    }
+
+    public static SdmcWritableStream OpenWrite(string relativePath)
+    {
+        return new SdmcWritableStream(Path.Combine(BasePath, relativePath));
+    }
+
+    public static SdmcReadableStream OpenRead(string relativePath)
+    {
+        return new SdmcReadableStream(Path.Combine(BasePath, relativePath));
     }
 }
